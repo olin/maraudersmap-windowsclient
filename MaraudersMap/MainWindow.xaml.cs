@@ -10,10 +10,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Linq;
-
-
-
-using Controls = Elysium.Theme.Controls;
 using System.Windows;
 
 
@@ -22,19 +18,21 @@ namespace MaraudersMap
 	/// <summary>
 	/// Interaction logic for MainWindow.xaml
 	/// </summary>
-	public partial class MainWindow : Controls.Window
+    public partial class MainWindow : Elysium.Controls.Window
 	{
         private System.Windows.Forms.NotifyIcon notifier;
         private System.Windows.Forms.ContextMenuStrip contextMenu1;
         private System.Windows.Forms.ToolStripMenuItem refreshItem, correctItem, currentPositionItem, exitItem;
         private Timer refreshTimer;
         private int currentPosition = 0;
+        private WirelessHelper wireless;
 
 		public MainWindow()
 		{
             InitializeComponent();
-			// Insert code required on object creation below this point.
+
             notifier = new System.Windows.Forms.NotifyIcon();
+            
             this.contextMenu1 = new System.Windows.Forms.ContextMenuStrip();
             refreshItem = new System.Windows.Forms.ToolStripMenuItem("Refresh");
             correctItem = new System.Windows.Forms.ToolStripMenuItem("Correct Position");
@@ -51,7 +49,20 @@ namespace MaraudersMap
             contextMenu1.LostFocus += (object sender, EventArgs a) => { contextMenu1.Hide(); };
             refreshTimer = new Timer(checkPosition, null, TimeSpan.Zero, TimeSpan.FromMinutes(1));
 
+            InitializeWireless();
+
         
+        }
+        private void InitializeWireless()
+        {
+            try
+            {
+                wireless = new WirelessHelper();
+            }
+            catch (Exception)
+            {
+                //Probably not on a computer with a wireless card.
+            }
         }
         protected override void OnStateChanged(EventArgs e)
         {
@@ -84,23 +95,39 @@ namespace MaraudersMap
 
         private void checkPosition(object state)
         {
-            currentPosition += 1;
-            currentPositionItem.Text = "" + currentPosition;
+            if (wireless == null)
+            {
+                return;
+            }
+
+            string sb = "";
+            foreach (List<SSIDEntry> ssids in wireless.GetWirelessStrengths().Values)
+            {
+                foreach (SSIDEntry ssid in ssids)
+                {
+                    sb += (ssid.ToString());
+                }
+            }
+            currentPositionItem.Text = sb;
         }
 
         private void timeSliderValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             string message = "Refresh every ";
-            if(e.NewValue <= 1){
+            if (e.NewValue <= 1)
+            {
                 message += "minute" + ":";
             }
-            else{
-                message += e.NewValue + " minutes";            
+            else
+            {
+                message += e.NewValue + " minutes";
             }
 
-            if(this.RefreshTimeBlock != null)
+            if (this.RefreshTimeBlock != null)
+            {
                 this.RefreshTimeBlock.Text = message;
-            refreshTimer.Change(TimeSpan.Zero, TimeSpan.FromMinutes(e.NewValue));
+                refreshTimer.Change(TimeSpan.Zero, TimeSpan.FromMinutes(e.NewValue));
+            }
         }
 
         private void LoginButtonClick(object sender, RoutedEventArgs e)

@@ -12,13 +12,14 @@ using NativeWifi;
 
 namespace MaraudersMap
 {
-    class WirelessHelper
+    public class WirelessHelper
     {
         private WlanClient client;
         public WirelessHelper()
         {
             client = new WlanClient();
         }
+        
 
         public Dictionary<string, List<SSIDEntry>> GetWirelessStrengths()
         {
@@ -44,8 +45,11 @@ namespace MaraudersMap
                     }
 
                     string ssid = System.Text.ASCIIEncoding.ASCII.GetString(network.dot11Ssid.SSID).ToString().Replace(((char)0) + "", ""); //replace null chars
-                    if(resultDict.ContainsKey(ssid))
-                        resultDict[ssid].Add(new SSIDEntry(ssid, macAddress, rss.ToString()));
+                    
+                    if (!resultDict.ContainsKey(ssid))
+                        resultDict[ssid] = new List<SSIDEntry>();
+                    
+                    resultDict[ssid].Add(new SSIDEntry(ssid, macAddress, rss.ToString()));
                 }
             }
 
@@ -78,7 +82,7 @@ namespace MaraudersMap
         }
 
 
-        public String ToString()
+        public new String ToString()
         {
             return String.Format("{'ssid':'{0}','mac':'{1}','rssi':'{2}'}", SSID,MACAddress,RSSI);
         }

@@ -5,9 +5,6 @@
 	StartupUri="MainWindow.xaml">
     <Application.Resources>
         <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/Elysium.Theme;component/Themes/Generic.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
             <Style TargetType="{x:Type Window}"/>
         </ResourceDictionary>
     </Application.Resources>
